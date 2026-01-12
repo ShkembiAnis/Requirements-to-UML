@@ -1,0 +1,6 @@
+REQ-1 The system shall allow a customer to place an order.
+REQ-2 Each order shall contain one or more order items.
+REQ-3 An order item must reference exactly one product.
+DEF A customer is a person who has a customerId and a name.
+CON The customerId must be unique.
+INFO This document describes the initial project scope and stakeholders.

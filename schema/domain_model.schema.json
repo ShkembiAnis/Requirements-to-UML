@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "doc_id": "string",
+    "created_at": "ISO-8601",
+    "version": "0.1"
+  },
+  "segments": [
+    {
+      "segment_id": "S1",
+      "label": "REQ | DEF | CON | INFO",
+      "text": "string",
+      "source": {
+        "page": 0,
+        "section": "string"
+      }
+    }
+  ],
+  "classes": [
+    {
+      "name": "Customer",
+      "attributes": [
+        {
+          "name": "customerId",
+          "type": "string",
+          "source_segments": ["S4"]
+        }
+      ],
+      "source_segments": ["S1", "S4"]
+    }
+  ],
+  "relations": [
+    {
+      "source": "Customer",
+      "target": "Order",
+      "label": "places",
+      "type": "association",
+      "cardinality": {
+        "source": "1",
+        "target": "0..*"
+      },
+      "source_segments": ["S1"]
+    }
+  ],
+  "quality": {
+    "num_segments": 0,
+    "kept_segments": 0,
+    "filter_ratio": 0.0,
+    "num_classes": 0,
+    "num_relations": 0
+  }
+}
