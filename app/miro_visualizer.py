@@ -31,9 +31,9 @@ def calculate_layout(num_classes: int, spacing: int = 400) -> List[Tuple[int, in
     return positions
 
 
-def create_connector(board_id: str, start_id: str, end_id: str, label: str = ""):
+def create_connector(board_id: str, start_id: str, end_id: str, label: str = "", cardinality: dict = None):
     """
-    Create a connector (line) between two shapes in Miro
+    Create a connector with multiplicities at both ends
     """
     url = f"{MIRO_API_BASE}/boards/{board_id}/connectors"
 
@@ -43,26 +43,39 @@ def create_connector(board_id: str, start_id: str, end_id: str, label: str = "")
         "shape": "curved",
         "style": {
             "strokeColor": "#1A1A1A",
-            "strokeWidth": 2
+            "strokeWidth": 2,
+            "endStrokeCap": "stealth"
         }
     }
 
-    # Add label if provided - position must be a string percentage
-    if label:
-        payload["captions"] = [{
-            "content": label,
-            "position": "50%"  # Changed from 0.5 to "50%"
-        }]
+    # Build captions list
+    captions = []
 
-    print(f"Creating connector: {start_id} → {end_id} (label: {label})")
+    # Source multiplicity (near start)
+    if cardinality and cardinality.get("source"):
+        captions.append({
+            "content": cardinality["source"],
+            "position": "14%"  # Near source
+        })
+
+    # Relationship label (middle)
+    if label:
+        captions.append({
+            "content": label,
+            "position": "50%"  # Middle
+        })
+
+    # Target multiplicity (near end)
+    if cardinality and cardinality.get("target"):
+        captions.append({
+            "content": cardinality["target"],
+            "position": "86%"  # Near target
+        })
+
+    if captions:
+        payload["captions"] = captions
 
     response = requests.post(url, json=payload, headers=get_headers())
-
-    print(f"Response status: {response.status_code}")
-
-    if response.status_code != 201:
-        print(f"Response body: {response.text}")
-
     response.raise_for_status()
     return response.json()
 
@@ -114,6 +127,7 @@ def visualize_domain_model(board_id: str, domain_model: Dict) -> Dict:
         source_name = rel["source"]
         target_name = rel["target"]
         label = rel.get("label", "")
+        cardinality = rel.get("cardinality", {"source": "1", "target": "0..*"})  # Get cardinality
 
         print(f"\nAttempting: {source_name} → {target_name}")
 
@@ -131,15 +145,17 @@ def visualize_domain_model(board_id: str, domain_model: Dict) -> Dict:
                 board_id=board_id,
                 start_id=class_id_map[source_name],
                 end_id=class_id_map[target_name],
-                label=label
+                label=label,
+                cardinality=cardinality  # Pass cardinality
             )
             created_connectors.append({
                 "from": source_name,
                 "to": target_name,
                 "label": label,
+                "cardinality": cardinality,
                 "miro_id": connector["id"]
             })
-            print(f"  ✓ Created connector: {source_name} → {target_name}")
+            print(f"  ✓ Created connector: {source_name} [{cardinality['source']}] --{label}-> [{cardinality['target']}] {target_name}")
         except Exception as e:
             print(f"  ✗ Failed to create connector {source_name} → {target_name}")
             print(f"    Error: {e}")
