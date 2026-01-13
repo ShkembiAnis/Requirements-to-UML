@@ -137,10 +137,12 @@ def extract_relations(segments: List[Segment], class_names: Set[str]) -> List[Di
                         pattern = (rf"\b{re.escape(av)}\b(?:\W+\w+){{0,6}}\W+"
                                    rf"{verb_pattern}\W+(?:\w+\W+){{0,6}}\b{re.escape(bv)}\b")
                         if re.search(pattern, txt_clean, flags=re.IGNORECASE):
+                            mverb = re.search(verb_pattern, txt_clean, flags=re.IGNORECASE)
+                            verb = mverb.group(1).lower() if mverb else "association"
                             rels.append({
                                 "source": a,
                                 "target": b,
-                                "label": "association",
+                                "label": verb,
                                 "type": "association",
                                 "cardinality": {"source": "1", "target": "0..*"},
                                 "source_segments": [s.segment_id]

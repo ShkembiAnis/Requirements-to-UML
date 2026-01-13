@@ -1,0 +1,7 @@
+REQ-1 The customer shall register with an email and password.
+REQ-2 The system shall create an account for each customer.
+REQ-3 Each account shall contain a status and a creationDate.
+REQ-4 The customer shall place one or more orders.
+REQ-5 Each order shall include a totalAmount and an orderDate.
+CON The email must be unique.
+INFO Stakeholders will review the first version next month.

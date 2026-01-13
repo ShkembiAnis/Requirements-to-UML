@@ -1,14 +1,24 @@
-### Health
-GET http://127.0.0.1:8000/health
+### Health check
+GET http://localhost:8000/health
 
-### Process inline text
-POST http://127.0.0.1:8000/process
+### Process requirements (returns JSON only)
+POST http://localhost:8000/process
 Content-Type: application/json
 
 {
-  "doc_id": "sample",
-  "text": "REQ-1 The system shall allow a customer to place an order.\nREQ-2 Each order shall contain one or more order items.\nREQ-3 An order item must reference exactly one product.\nDEF A customer is a person who has a customerId and a name.\nCON The customerId must be unique.\nINFO This document describes the initial project scope."
+  "doc_id": "sample_doc",
+  "text": "REQ-1 The system shall allow a customer to place an order.\nREQ-2 Each order shall contain one or more order items.\nREQ-3 An order item must reference exactly one product.\nDEF A customer is a person who has a customerId and a name.\nCON The customerId must be unique."
 }
 
-### Process local file (absolute path!)
-POST http://127.0.0.1:8000/process-file?path=C:\Users\aniss\Documents\FH\SEM3\requirements-to-uml\data\input\sample_requirements.txt&doc_id=samplefile
+### Visualize in Miro
+POST http://localhost:8000/visualize
+Content-Type: application/json
+
+{
+  "board_id": "uXjVGRZh1IE=",
+  "doc_id": "sample_doc",
+  "text": "REQ-1 The system shall allow a customer to place an order.\nREQ-2 Each order shall contain one or more order items.\nREQ-3 An order item must reference exactly one product.\nDEF A customer is a person who has a customerId and a name.\nCON The customerId must be unique."
+}
+
+### Visualize from file
+POST http://localhost:8000/visualize-file?board_id=uXjVGRZh1IE=&path=app/sample_requirements.txt&doc_id=sample_doc
