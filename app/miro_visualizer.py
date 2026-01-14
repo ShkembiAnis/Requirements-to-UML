@@ -118,7 +118,7 @@ def visualize_domain_model(board_id: str, domain_model: Dict) -> Dict:
             "miro_id": result["id"],
             "position": {"x": x, "y": y}
         })
-        print(f"  ✓ Created {class_name} with ID: {result['id']}")
+        print(f"  [OK] Created {class_name} with ID: {result['id']}")
 
     # Create connectors for relations
     created_connectors = []
@@ -129,15 +129,15 @@ def visualize_domain_model(board_id: str, domain_model: Dict) -> Dict:
         label = rel.get("label", "")
         cardinality = rel.get("cardinality", {"source": "1", "target": "0..*"})  # Get cardinality
 
-        print(f"\nAttempting: {source_name} → {target_name}")
+        print(f"\nAttempting: {source_name} -> {target_name}")
 
         # Check if both classes exist
         if source_name not in class_id_map:
-            print(f"  ⚠️ Source class '{source_name}' not found in class_id_map")
+            print(f"  [WARNING] Source class '{source_name}' not found in class_id_map")
             continue
 
         if target_name not in class_id_map:
-            print(f"  ⚠️ Target class '{target_name}' not found in class_id_map")
+            print(f"  [WARNING] Target class '{target_name}' not found in class_id_map")
             continue
 
         try:
@@ -155,9 +155,9 @@ def visualize_domain_model(board_id: str, domain_model: Dict) -> Dict:
                 "cardinality": cardinality,
                 "miro_id": connector["id"]
             })
-            print(f"  ✓ Created connector: {source_name} [{cardinality['source']}] --{label}-> [{cardinality['target']}] {target_name}")
+            print(f"  [OK] Created connector: {source_name} [{cardinality['source']}] --{label}-> [{cardinality['target']}] {target_name}")
         except Exception as e:
-            print(f"  ✗ Failed to create connector {source_name} → {target_name}")
+            print(f"  [FAILED] Failed to create connector {source_name} -> {target_name}")
             print(f"    Error: {e}")
 
     return {
