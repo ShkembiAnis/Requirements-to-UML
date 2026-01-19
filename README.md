@@ -143,11 +143,11 @@ MIRO_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 {
   "mcpServers": {
     "requirements-analyzer": {
-      "command": "C:\\Users\\YOUR_USERNAME\\Documents\\requirements-to-uml\\venv\\Scripts\\python.exe",
+      "command": "C:\\YOUR_PATH\\requirements-to-uml\\venv\\Scripts\\python.exe",
       "args": ["-m", "app.mcp_server"],
-      "cwd": "C:\\Users\\YOUR_USERNAME\\Documents\\requirements-to-uml",
+      "cwd": "C:\\YOUR_PATH\\requirements-to-uml",
       "env": {
-        "PYTHONPATH": "C:\\Users\\YOUR_USERNAME\\Documents\\requirements-to-uml"
+        "PYTHONPATH": "C:\\YOUR_PATH\\requirements-to-uml"
       }
     }
   }
@@ -159,11 +159,11 @@ MIRO_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 {
   "mcpServers": {
     "requirements-analyzer": {
-      "command": "/Users/YOUR_USERNAME/requirements-to-uml/venv/bin/python",
+      "command": "/YOUR_PATH/requirements-to-uml/venv/bin/python",
       "args": ["-m", "app.mcp_server"],
-      "cwd": "/Users/YOUR_USERNAME/requirements-to-uml",
+      "cwd": "/YOUR_PATH/requirements-to-uml",
       "env": {
-        "PYTHONPATH": "/Users/YOUR_USERNAME/requirements-to-uml"
+        "PYTHONPATH": "/YOUR_PATH/requirements-to-uml"
       }
     }
   }
@@ -287,7 +287,7 @@ requirements-to-uml/
 │   ├── input/                  # Test requirement documents
 │   └── output/                 # Generated outputs (optional)
 ├── tests/                      # Unit tests
-├── .env                        # API keys (DO NOT COMMIT)
+├── .env                        # API keys (NOT COMMITED)
 ├── .env.example                # Template for .env
 ├── .gitignore                  # Git ignore rules
 ├── requirements.txt            # Python dependencies

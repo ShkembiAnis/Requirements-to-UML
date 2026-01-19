@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from app.filter import segment_text
 from app.model_builder import build_domain_model
-from app.file_processor import extract_text_from_file  # NEW
+from app.file_processor import extract_text_from_file
 
 app = FastAPI(title="Requirements to UML Prototype", version="0.1")
 
@@ -30,10 +30,7 @@ def process(req: ProcessRequest):
 def process_file(path: str, doc_id: str = "doc"):
     """Process requirements from a file (PDF, DOCX, or TXT)"""
     try:
-        # Extract text using new file processor
         text = extract_text_from_file(path)
-
-        # Process as before
         segments = segment_text(text, doc_id=doc_id)
         model = build_domain_model(doc_id, segments)
 
