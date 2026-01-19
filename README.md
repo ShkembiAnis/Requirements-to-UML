@@ -14,7 +14,7 @@ This prototype automatically transforms textual requirement documents (PDF, DOCX
 - **Claude Desktop** as the user interface
 - **Miro** for collaborative UML visualization
 
-**Demo:** From a requirements PDF → Automatic UML class diagram with classes, attributes, and relationships in 30 seconds.
+**Demo:** From a requirements PDF → Automatic UML class diagram with classes, attributes, and relationships.
 
 ---
 
