@@ -6,7 +6,6 @@ from typing import List, Dict, Set
 from app.filter import Segment
 
 
-# Expanded stopword list
 _STOPWORDS = {
     "the", "a", "an", "and", "or", "to", "of", "in", "on", "for", "with", "by",
     "is", "are", "be", "as", "at", "from", "this", "that", "these", "those",
@@ -21,7 +20,6 @@ _STOPWORDS = {
     "registered", "temporary", "financial", "item", "purchase"
 }
 
-# Common attribute keywords (NOT classes)
 _ATTRIBUTE_KEYWORDS = {
     "id", "name", "email", "password", "address", "phone", "date", "time",
     "amount", "price", "quantity", "status", "description", "type", "code",
@@ -35,16 +33,9 @@ _ATTRIBUTE_KEYWORDS = {
 
 
 def _normalize_class_name(name: str) -> str:
-    """Normalize class name to handle case variations"""
-    # Convert to title case for consistency
-    # "orderitem" → "OrderItem"
-    # Handle camelCase: "OrderItem" stays "OrderItem"
-
-    # If already camelCase, keep it
+    """Normalize class name to handle case variations (e.g., 'orderitem' → 'Orderitem')"""
     if re.match(r'^[A-Z][a-z]+[A-Z]', name):
         return name
-
-    # Otherwise, just capitalize first letter
     return name.capitalize()
 
 
@@ -52,17 +43,14 @@ def _is_likely_attribute(token: str) -> bool:
     """Check if a token is likely an attribute rather than a class"""
     low = token.lower()
 
-    # Check if it's a known attribute keyword
     if low in _ATTRIBUTE_KEYWORDS:
         return True
 
-    # Check if it ends with common attribute suffixes
     attribute_suffixes = ["id", "name", "date", "time", "amount", "price",
                           "count", "number", "code", "status", "type", "quantity"]
     if any(low.endswith(suffix) for suffix in attribute_suffixes):
         return True
 
-    # Check for camelCase attributes starting with lowercase
     if re.match(r'^[a-z]+[A-Z][a-zA-Z]*$', token):
         return True
 
@@ -73,11 +61,9 @@ def _ok_concept(token: str) -> bool:
     """Check if token is a valid class concept"""
     low = token.lower()
 
-    # Special case: "Address" (capitalized) is a valid class
     if token == "Address":
         return True
 
-    # Too short
     if len(token) < 3:
         return False
 
@@ -93,11 +79,9 @@ def _ok_concept(token: str) -> bool:
     if re.fullmatch(r"[a-z]+-\d+", low):
         return False
 
-    # Reject common non-domain words
     if low in ["email", "price", "quantity", "rating", "proof", "zero", "stock"]:
         return False
 
-    # Don't consider it a class if it's likely an attribute
     if _is_likely_attribute(token):
         return False
 
@@ -113,8 +97,6 @@ def extract_candidate_classes(segments: List[Segment]) -> Dict[str, Set[str]]:
             continue
 
         if s.label == "DEF":
-            # Pattern: "DEF A/An/The ClassName ..."
-            # Don't use IGNORECASE for the class name part
             def_match = re.search(
                 r'DEF\s+(?:A|An|The)\s+([A-Z][a-zA-Z]+)',
                 s.text  # Remove IGNORECASE flag
@@ -140,22 +122,16 @@ def extract_candidate_classes(segments: List[Segment]) -> Dict[str, Set[str]]:
 
 
 def extract_attributes(segments: List[Segment]) -> Dict[str, List[Dict]]:
-    """
-    Extract attributes from DEF statements primarily
-    """
+    """Extract attributes from DEF statements"""
     attrs: Dict[str, List[Dict]] = {}
 
     for s in segments:
-        # Focus on DEF segments
         if s.label != "DEF":
             continue
 
         txt = s.text.strip()
-
-        # Remove "DEF " prefix
         txt_clean = re.sub(r"^\s*DEF\s+", "", txt, flags=re.IGNORECASE)
 
-        # Pattern 1: "A Customer is ... with/has customerId, emailAddress, and fullName"
         match1 = re.search(
             r'(?:A|An|The)\s+([A-Z][a-zA-Z]+)\s+.*?\b(?:with|has|contains?|includes?)\s+(?:a|an)?\s*(.*?)(?:\.|$)',
             txt_clean,
@@ -171,7 +147,6 @@ def extract_attributes(segments: List[Segment]) -> Dict[str, List[Dict]]:
                 _extract_attribute_names(attributes_text, class_name, s.segment_id, attrs)
                 continue
 
-        # Pattern 2: "A Payment ... includes paymentId, paymentMethod, paymentDate, amount, and transactionStatus"
         match2 = re.search(
             r'(?:A|An|The)\s+([A-Z][a-zA-Z]+)\s+.*?(?:with|has|includes?|contains?)\s+([\w,\s]+)',
             txt_clean,
@@ -184,7 +159,6 @@ def extract_attributes(segments: List[Segment]) -> Dict[str, List[Dict]]:
 
             if _ok_concept(class_name):
                 attrs.setdefault(class_name, [])
-                # Split by period to avoid grabbing next sentence
                 attributes_text = attributes_text.split('.')[0]
                 _extract_attribute_names(attributes_text, class_name, s.segment_id, attrs)
 
@@ -193,35 +167,26 @@ def extract_attributes(segments: List[Segment]) -> Dict[str, List[Dict]]:
 
 def _extract_attribute_names(text: str, class_name: str, segment_id: str, attrs: Dict):
     """Helper to extract attribute names from text"""
-    # Split by 'and' and commas
     parts = re.split(r',|\band\b', text)
 
     for p in parts:
         p = p.strip()
-
-        # Remove leading articles and prepositions
         p = re.sub(r'^\s*(?:a|an|the|with|for|of)\s+', '', p, flags=re.IGNORECASE)
 
-        # Extract attribute name (camelCase or single word)
-        # Match: "customerId" or "emailAddress" or "fullName"
         match = re.search(r'\b([a-z][a-zA-Z0-9_]*)\b', p)
         if not match:
             continue
 
         attr_name = match.group(1)
 
-        # Skip if it's a stopword or non-attribute word
         if attr_name.lower() in _STOPWORDS or attr_name.lower() in ["user", "person", "item", "thing", "object", "has", "includes", "contains", "with"]:
             continue
 
-        # Skip very short attributes
         if len(attr_name) < 3:
             continue
 
-        # Try to infer data type
         data_type = _infer_data_type(attr_name, p)
 
-        # Check if attribute already exists
         existing = [a for a in attrs[class_name] if a['name'].lower() == attr_name.lower()]
         if not existing:
             attrs[class_name].append({
@@ -234,48 +199,30 @@ def _extract_attribute_names(text: str, class_name: str, segment_id: str, attrs:
 def _infer_data_type(attr_name: str, context: str) -> str:
     """Infer data type from attribute name and context"""
     attr_lower = attr_name.lower()
-    context_lower = context.lower()
 
-    # ID fields
     if attr_lower.endswith('id'):
         return "int"
 
-    # Date/time fields
     if any(x in attr_lower for x in ['date', 'time', 'timestamp']):
         return "Date"
 
-    # Numeric fields
     if any(x in attr_lower for x in ['amount', 'price', 'cost', 'total', 'subtotal']):
         return "decimal"
 
     if any(x in attr_lower for x in ['quantity', 'count', 'number', 'rating']):
         return "int"
 
-    # Boolean fields
     if any(x in attr_lower for x in ['is', 'has', 'enabled', 'active']):
         return "boolean"
 
-    # Specific types
-    if 'email' in attr_lower:
+    if any(x in attr_lower for x in ['email', 'password', 'address', 'street', 'city', 'phone']):
         return "String"
 
-    if 'password' in attr_lower:
-        return "String"
-
-    if 'address' in attr_lower or 'street' in attr_lower or 'city' in attr_lower:
-        return "String"
-
-    if 'phone' in attr_lower:
-        return "String"
-
-    # Default
     return "String"
 
 
 def extract_relations(segments: List[Segment], class_names: Set[str]) -> List[Dict]:
     """Extract relationships between classes"""
-
-    # Create all possible variants
     compound_variants = {}
     for name in class_names:
         compound_variants[name.lower()] = name
