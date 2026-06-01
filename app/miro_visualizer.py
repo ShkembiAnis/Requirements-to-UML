@@ -101,7 +101,10 @@ def visualize_domain_model(board_id: str, domain_model: Dict) -> Dict:
     print(f"\nCreating {len(classes)} class boxes...")
     for i, cls in enumerate(classes):
         class_name = cls["name"]
-        attributes = [attr["name"] for attr in cls.get("attributes", [])]
+        attributes = [
+            f"{attr['name']}: {attr.get('type', 'String')}"
+            for attr in cls.get("attributes", [])
+        ]
         x, y = positions[i]
 
         result = create_class_box(
